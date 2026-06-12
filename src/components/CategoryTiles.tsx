@@ -3,12 +3,11 @@ import { ArrowUpRight } from 'lucide-react';
 import { useStorageImages } from '@/lib/storageImages';
 
 const tiles = [
-  { handle: 'boys', title: 'Boys Collection', folder: 'boys', img:"public/boys.png"},
-  { handle: 'girls', title: 'Girls Collection', folder: 'girls', img: 'public/girls.png' },
-  { handle: 'kids', title: 'Kids Collection', folder: 'kids', img: 'public/kids.png' },
-  { handle: 'thermal', title: 'Thermal Collection', folder: 'thermal', img: 'public/thermal.png' },
+  { handle: 'boys', title: 'Boys Collection', folder: 'boys', img:"/boys.png"},
+  { handle: 'girls', title: 'Girls Collection', folder: 'girls', img:'/girls.png' },
+  { handle: 'kids', title: 'Kids Collection', folder: 'kids', img: '/kids.png' },
+  { handle: 'thermal', title: 'Thermal Collection', folder: 'thermal', img:'/thermal.png' },
 ];
-
 function CategoryTile({ tile }: { tile: typeof tiles[number] }) {
   const images = useStorageImages(tile.folder, [tile.img]);
   const to = tile.handle === 'thermal' ? '/thermal' : `/collections/${tile.handle}`;

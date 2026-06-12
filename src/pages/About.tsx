@@ -69,7 +69,7 @@ export default function About() {
           </div>
 
           <img
-            src="/public/founder.jpg"
+            src="/founder.jpg"
             alt="Founder"
             className="rounded-3xl shadow-lg"
           />
@@ -80,7 +80,7 @@ export default function About() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
           <img
-            src="/public/gunjan.png"
+            src="/gunjan.png"
             alt="CEO"
             className="rounded-3xl shadow-lg order-2 md:order-1"
           />
@@ -122,7 +122,7 @@ export default function About() {
             </p>
           </div>
           <img
-            src="/public/bd-singh-yadav.jpeg"
+            src="/bd-singh-yadav.jpeg"
             alt="Managing Director"
             className="rounded-3xl shadow-lg"
           />
