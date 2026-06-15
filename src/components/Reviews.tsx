@@ -1,5 +1,4 @@
 import { Star, Quote } from 'lucide-react';
-
 const reviews = [
   { name: 'Aarav S.', text: 'Best socks I have ever bought. The cotton is incredibly soft and they hold up wash after wash.', loc: 'Mumbai' },
   { name: 'Priya M.', text: 'Ordered tees for the whole family. Premium feel at honest prices. Delivery was super quick!', loc: 'Delhi' },
@@ -12,7 +11,7 @@ export default function Reviews() {
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
         <div className="text-center mb-12">
           <p className="text-xs uppercase tracking-[0.2em] text-[#8B2635] font-semibold">Loved by thousands</p>
-          <h2 className="font-poppins font-bold text-3xl lg:text-4xl text-[#0A0A0A] mt-1">What Our Customers Say</h2>
+          <h2 className="font-poppins font-bold text-3xl lg:text-4xl text-[#0A0A0A] mt-1">OUR HAPPY CUSTOMERS</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {reviews.map(r => (

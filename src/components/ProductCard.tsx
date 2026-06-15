@@ -38,7 +38,7 @@ export default function ProductCard({ product }: Props) {
             <img src={img} alt={product.name} loading="lazy"
               className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 group-hover:opacity-0" />
             <img src={img2} alt={product.name} loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-700 group-hover:scale-110" />
+              className="absolute inset-0 w-fix h-fix object-cover scale-105 transition-transform duration-700 group-hover:scale-110" />
           </>
         )}
         {product.tags?.includes('new') && (
@@ -48,11 +48,11 @@ export default function ProductCard({ product }: Props) {
           <span className="absolute top-3 left-3 bg-[#D4622F] text-white text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-full">BESTSELLER</span>
         )}
         <button onClick={toggleWish}
-          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center transition hover:scale-110">
+          className="absolute top-3 right-3 w-9 h-9 rounded-fix bg-white/90 backdrop-blur flex items-center justify-center transition hover:scale-110">
           <Heart size={16} className={wish ? 'fill-[#8B2635] text-[#8B2635]' : 'text-[#2C2C2C]'} />
         </button>
         <div className="absolute bottom-0 inset-x-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-          <span className="block w-full text-center bg-[#0A0A0A] text-white text-sm font-medium py-2.5 rounded-xl">
+          <span className="block w-fix text-center bg-[#0A0A0A] text-white text-sm font-medium py-2.5 rounded-xl">
             View Product
           </span>
         </div>

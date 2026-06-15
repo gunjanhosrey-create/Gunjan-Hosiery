@@ -1,110 +1,166 @@
-import { useEffect, useRef, useState } from 'react';
+import {useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import PageShell from '@/components/PageShell';
 import { useCart } from '@/contexts/CartContext';
-import { formatPrice, PROJECT_ID } from '@/lib/format';
-
-const STRIPE_ACCOUNT_ID = 'acct_1TfxLAHGfPcVH4jF';
-const PK = 'pk_live_51OJhJBHdGQpsHqInIzu7c6PzGPSH0yImD4xfpofvxvFZs0VFhPRXZCyEgYkkhOtBOXFWvssYASs851mflwQvjnrl00T6DbUwWZ';
-
-declare global { interface Window { Stripe?: any; } }
-
-function loadStripeJs(): Promise<any> {
-  return new Promise((resolve) => {
-    if (window.Stripe) return resolve(window.Stripe(PK, { stripeAccount: STRIPE_ACCOUNT_ID }));
-    const s = document.createElement('script');
-    s.src = 'https://js.stripe.com/v3/';
-    s.onload = () => resolve(window.Stripe(PK, { stripeAccount: STRIPE_ACCOUNT_ID }));
-    document.head.appendChild(s);
-  });
+import { formatPrice} from '@/lib/format';
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
 }
+
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+
+    document.body.appendChild(script);
+  });
+};
 
 export default function CheckoutPage() {
   const { cart, subtotal, clearCart } = useCart();
   const nav = useNavigate();
-  const [clientSecret, setClientSecret] = useState('');
+
   const [payError, setPayError] = useState('');
-  const [tax, setTax] = useState(0);
+  const [tax] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [addr, setAddr] = useState({ name: '', email: '', address: '', city: '', state: '', zip: '', country: 'India' });
-  const stripeRef = useRef<any>(null);
-  const elementsRef = useRef<any>(null);
-  const mountRef = useRef<HTMLDivElement>(null);
+
+  const [addr, setAddr] = useState({
+    name: '',
+    email: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: 'India',
+  });
+
   const total = subtotal + tax;
-
-  useEffect(() => {
-    if (!cart.length) return;
-    setClientSecret(''); setPayError('');
-    supabase.functions.invoke('create-payment-intent', { body: { amount: total, currency: 'inr' } })
-      .then(({ data, error }) => {
-        if (error || !data?.clientSecret) { setPayError('Unable to initialize payment. Please try again.'); return; }
-        setClientSecret(data.clientSecret);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [total]);
-
-  useEffect(() => {
-    if (addr.state) {
-      supabase.functions.invoke('calculate-tax', { body: { state: addr.state, subtotal } })
-        .then(({ data }) => { if (data?.success) setTax(data.taxCents); });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addr.state]);
-
-  useEffect(() => {
-    if (!clientSecret || !mountRef.current) return;
-    let cancelled = false;
-    loadStripeJs().then((stripe) => {
-      if (cancelled) return;
-      stripeRef.current = stripe;
-      const elements = stripe.elements({ clientSecret, appearance: { theme: 'stripe' } });
-      elementsRef.current = elements;
-      const pe = elements.create('payment');
-      pe.mount(mountRef.current);
-    });
-    return () => { cancelled = true; };
-  }, [clientSecret]);
-
-  const onSuccess = async (pi: any) => {
-    const { data: customer } = await supabase.from('ecom_customers')
-      .upsert({ email: addr.email, name: addr.name }, { onConflict: 'email' }).select('id').single();
-    const { data: order } = await supabase.from('ecom_orders').insert({
-      customer_id: customer?.id, status: 'paid', subtotal, tax, shipping: 0, total,
-      shipping_address: addr, stripe_payment_intent_id: pi.id,
-    }).select('id').single();
-    if (order) {
-      const items = cart.map(i => ({
-        order_id: order.id, product_id: i.product_id, variant_id: i.variant_id || null,
-        product_name: i.name, variant_title: i.variant_title || null, sku: i.sku || null,
-        quantity: i.quantity, unit_price: i.price, total: i.price * i.quantity,
-      }));
-      await supabase.from('ecom_order_items').insert(items);
-      try {
-        await fetch(`https://famous.ai/api/ecommerce/${PROJECT_ID}/send-confirmation`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: order.id, customerEmail: addr.email, customerName: addr.name, orderItems: items, subtotal, shipping: 0, tax, total, shippingAddress: addr }),
-        });
-      } catch {}
-    }
-    clearCart();
-    nav(`/order-confirmation?id=${order?.id || ''}`);
-  };
 
   const pay = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripeRef.current || !elementsRef.current) return;
-    setLoading(true); setPayError('');
-    const { error, paymentIntent } = await stripeRef.current.confirmPayment({ elements: elementsRef.current, redirect: 'if_required' });
-    if (error) { setPayError(error.message || 'Payment failed'); setLoading(false); }
-    else if (paymentIntent?.status === 'succeeded') onSuccess(paymentIntent);
-    else setLoading(false);
+
+    const loaded = await loadRazorpay();
+
+    if (!loaded) {
+      alert('Razorpay SDK failed to load');
+      return;
+    }
+
+    const options = {
+      key: 'rzp_test_T0egHAqjvkXFKW',
+      amount: total,
+      currency: 'INR',
+      name: 'Gunjan Hosiery',
+      description: 'Order Payment',
+
+      prefill: {
+        name: addr.name,
+        email: addr.email,
+      },
+
+      handler: async function (response: any) {
+        try {
+          const { data: customer } = await supabase
+            .from('ecom_customers')
+            .upsert(
+              {
+                email: addr.email,
+                name: addr.name,
+              },
+              { onConflict: 'email' }
+            )
+            .select('id')
+            .single();
+
+          const { data: order } = await supabase
+            .from('ecom_orders')
+            .insert({
+              customer_id: customer?.id,
+              status: 'paid',
+              subtotal,
+              tax,
+              shipping: 0,
+              total,
+              shipping_address: addr,
+              razorpay_payment_id: response.razorpay_payment_id,
+            })
+            .select('id')
+            .single();
+
+          clearCart();
+
+          nav(`/order-confirmation?id=${order?.id || ''}`);
+        } catch (err) {
+          console.error(err);
+          setPayError('Order save failed');
+        }
+      },
+
+      theme: {
+        color: '#8B2635',
+      },
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
   };
+const placeCODOrder = async () => {
+  try {
+    setLoading(true);
 
-  if (!cart.length) {
-    return <PageShell><div className="py-32 text-center text-[#2C2C2C]/60">Your cart is empty. <a href="/shop" className="text-[#8B2635] underline">Shop now</a></div></PageShell>;
+    const { data: customer } = await supabase
+      .from('ecom_customers')
+      .upsert(
+        {
+          email: addr.email,
+          name: addr.name,
+        },
+        { onConflict: 'email' }
+      )
+      .select('id')
+      .single();
+
+    const { data: order } = await supabase
+      .from('ecom_orders')
+      .insert({
+        customer_id: customer?.id,
+        status: 'pending',
+        payment_method: 'COD',
+        payment_status: 'unpaid',
+        subtotal,
+        tax,
+        shipping: 0,
+        total,
+        shipping_address: addr,
+      })
+      .select('id')
+      .single();
+
+    clearCart();
+
+    nav(`/order-confirmation?id=${order?.id || ''}`);
+  } catch (err) {
+    console.error(err);
+    setPayError('COD order failed');
+  } finally {
+    setLoading(false);
   }
-
+};
+  if (!cart.length) {
+    return (
+      <PageShell>
+        <div className="py-32 text-center text-[#2C2C2C]/60">
+          Your cart is empty.
+        </div>
+      </PageShell>
+    );
+  }
   return (
     <PageShell>
       <div className="max-w-5xl mx-auto px-4 lg:px-8 py-12">
@@ -124,16 +180,30 @@ export default function CheckoutPage() {
 
             <h2 className="font-semibold text-lg mt-8 mb-4">Payment</h2>
             {payError && <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-700 text-sm mb-3">{payError}</div>}
-            {clientSecret ? (
-              <form onSubmit={pay}>
-                <div ref={mountRef} />
-                <button type="submit" disabled={loading} className="w-full mt-5 bg-[#0A0A0A] text-white py-4 rounded-xl font-medium hover:bg-[#8B2635] transition disabled:opacity-50">
-                  {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
-                </button>
-              </form>
-            ) : !payError ? (
-              <div className="text-[#2C2C2C]/60 text-sm py-6">Loading payment form...</div>
-            ) : null}
+            <form onSubmit={pay}>
+  <button
+    type="submit"
+    disabled={loading}
+    className="w-full mt-5 bg-[#0A0A0A] text-white py-4 rounded-xl font-medium hover:bg-[#8B2635] transition disabled:opacity-50"
+  >
+    {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
+  </button>
+  <button
+  type="button"
+  onClick={placeCODOrder}
+  className="w-full mt-3 border border-[#8B2635] text-[#8B2635] py-4 rounded-xl font-medium hover:bg-[#8B2635] hover:text-white transition"
+>
+  Cash on Delivery
+</button>
+<h2 className="font-semibold text-lg mt-8 mb-4">Payment</h2>
+
+{payError && (
+  <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-700 text-sm mb-3">
+    {payError}
+  </div>
+)}
+
+</form>
           </div>
 
           <div className="bg-[#FAF8F5] rounded-2xl p-6 h-fit">

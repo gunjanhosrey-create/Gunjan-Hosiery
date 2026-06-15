@@ -7,8 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { useSeo } from '@/lib/seo';
 import { useStorageImages } from '@/lib/storageImages';
 
-const fallbackThermal = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1600&q=80';
-
+const fallbackThermal = '/thermal/main.png';
 const thermalCategories = [
   { title: 'Men Thermal', gender: 'men', line: 'Thermal top and bottom sets for winter layering.' },
   { title: 'Women Thermal', gender: 'women', line: 'Soft warmer sets designed for daily comfort.' },
@@ -119,7 +118,7 @@ export default function ThermalCollection() {
           {thermalCategories.map((card, index) => (
             <article key={card.title} className="group overflow-hidden rounded-2xl border bg-white shadow-sm">
               <div className="aspect-[4/5] overflow-hidden bg-[#F5F1ED]">
-                <img src={images[index % images.length]} alt={card.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src='/thermal/kids.png'></img>
               </div>
               <div className="p-4">
                 <h3 className="font-poppins font-semibold text-lg">{card.title}</h3>

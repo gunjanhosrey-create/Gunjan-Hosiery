@@ -46,7 +46,6 @@ export default function ProductPage() {
     run();
     window.scrollTo(0, 0);
   }, [handle]);
-
   if (!product) return <PageShell><div className="py-32 text-center text-[#2C2C2C]/60">Loading...</div></PageShell>;
 
   const hasVariants = product.has_variants && product.variants?.length > 0;
@@ -67,7 +66,6 @@ export default function ProductPage() {
     const v = product.variants?.find((x: any) => x.option1 === s || x.title?.toLowerCase().includes(s.toLowerCase()));
     if (v) setSelectedVariant(v);
   };
-
   const handleAdd = () => {
     if (hasVariants && !selectedSize) return;
     if (!inStock) return;
@@ -83,31 +81,28 @@ export default function ProductPage() {
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
-
   return (
     <PageShell>
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8">
         <nav className="text-sm text-[#2C2C2C]/50 mb-6">
           <Link to="/" className="hover:text-[#8B2635]">Home</Link> / <Link to="/shop" className="hover:text-[#8B2635]">Shop</Link> / <span className="text-[#0A0A0A]">{product.name}</span>
         </nav>
-
         <div className="grid lg:grid-cols-2 gap-10">
           <div>
             <div className="rounded-3xl overflow-hidden bg-[#F5F1ED] aspect-square">
-              <img src={product.images?.[activeImg]} alt={product.name} className="w-full h-full object-cover" />
+              <img src={product.images?.[activeImg]} alt={product.name} className="w-100% h-100% object-cover" />
             </div>
             {product.images?.length > 1 && (
               <div className="flex gap-3 mt-4">
                 {product.images.map((img: string, i: number) => (
                   <button key={i} onClick={() => setActiveImg(i)}
                     className={`w-20 h-20 rounded-xl overflow-hidden border-2 transition ${activeImg === i ? 'border-[#8B2635]' : 'border-transparent'}`}>
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={img} alt="" className="w-100% h-100% object-cover" />
                   </button>
                 ))}
               </div>
             )}
           </div>
-
           <div>
             <p className="text-xs uppercase tracking-wider text-[#8B2635] font-semibold">{product.product_type}</p>
             <h1 className="font-poppins font-bold text-3xl lg:text-4xl text-[#0A0A0A] mt-1">{product.name}</h1>
@@ -117,10 +112,8 @@ export default function ProductPage() {
               </span>
               <span className="text-sm text-[#2C2C2C]/60">{ratingInfo.count ? `${ratingInfo.avg.toFixed(1)} · ${ratingInfo.count} review${ratingInfo.count > 1 ? 's' : ''}` : 'No reviews yet'}</span>
             </div>
-
             <p className="font-poppins font-bold text-3xl text-[#0A0A0A] mt-5">{formatPrice(currentPrice)}</p>
             <p className="text-[#2C2C2C]/70 mt-4 leading-relaxed">{product.description}</p>
-
             {hasVariants && (
               <div className="mt-7">
                 <p className="font-semibold text-sm mb-3">Select Size</p>
@@ -140,7 +133,6 @@ export default function ProductPage() {
                 </div>
               </div>
             )}
-
             <div className="flex items-center gap-4 mt-7">
               <div className="flex items-center border-2 border-gray-200 rounded-xl">
                 <button onClick={() => setQty(Math.max(1, qty - 1))} className="p-3"><Minus size={16} /></button>
@@ -156,7 +148,6 @@ export default function ProductPage() {
               className="w-full mt-3 border-2 border-[#0A0A0A] py-3.5 rounded-xl font-medium hover:bg-[#0A0A0A] hover:text-white transition disabled:opacity-50">
               Buy Now
             </button>
-
             <div className="grid grid-cols-3 gap-3 mt-8 pt-8 border-t">
               {[[Truck, 'Free Shipping'], [RefreshCw, '7-Day Returns'], [ShieldCheck, 'Secure Checkout']].map(([Icon, t]: any) => (
                 <div key={t} className="text-center">
@@ -167,10 +158,7 @@ export default function ProductPage() {
             </div>
           </div>
         </div>
-
         <ProductReviews productId={product.id} />
-
-
         {related.length > 0 && (
           <div className="mt-20">
             <h2 className="font-poppins font-bold text-2xl text-[#0A0A0A] mb-6">You May Also Like</h2>

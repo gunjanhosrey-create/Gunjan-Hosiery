@@ -33,20 +33,43 @@ export default function AdminProducts() {
   useEffect(() => { load(); }, []);
 
   const upload = async (files: FileList | null) => {
-    if (!files) return;
-    setUploading(true);
-    const urls: string[] = [];
-    for (const file of Array.from(files)) {
-      const path = `${form.folder}/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-      const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(path, file, { upsert: true });
-      if (!error) {
-        const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path);
-        urls.push(data.publicUrl);
-      }
+  if (!files) return;
+
+  setUploading(true);
+
+  const urls: string[] = [];
+
+  for (const file of Array.from(files)) {
+    const path = `${form.folder}/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+
+    const { data, error } = await supabase.storage
+      .from(IMAGE_BUCKET)
+      .upload(path, file, {
+        upsert: true,
+      });
+
+    console.log("UPLOAD DATA:", data);
+    console.log("UPLOAD ERROR:", error);
+
+    if (error) {
+      alert(error.message);
+      continue;
     }
-    setForm((f: any) => ({ ...f, images: [...f.images, ...urls] }));
-    setUploading(false);
-  };
+
+    const { data: publicData } = supabase.storage
+      .from(IMAGE_BUCKET)
+      .getPublicUrl(path);
+
+    urls.push(publicData.publicUrl);
+  }
+
+  setForm((f: any) => ({
+    ...f,
+    images: [...f.images, ...urls]
+  }));
+
+  setUploading(false);
+};
 
   const save = async () => {
     if (!form.name || !form.price) return;

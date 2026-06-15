@@ -1,11 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
-//
-//
-// Initialize database client
-const supabaseUrl = 'https://ebqsrneqvbdfwpejekhn.databasepad.com';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6ImE4MzM1MGI0LTYzMDEtNDczNy05OWU2LWZkNjg4YzUwOTYzYSJ9.eyJwcm9qZWN0SWQiOiJlYnFzcm5lcXZiZGZ3cGVqZWtobiIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzgwOTAyNDc3LCJleHAiOjIwOTYyNjI0NzcsImlzcyI6ImZhbW91cy5kYXRhYmFzZXBhZCIsImF1ZCI6ImZhbW91cy5jbGllbnRzIn0.XjRx3YFgBnacziXMfksukTGEzmfSP2688-_tN7XAGWs';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
-export { supabase };
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5senpkcG1udWhxc2h0bW5oaGRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNjIxNTEsImV4cCI6MjA4OTgzODE1MX0.c0z716yaM8-GiSjvkUfvBL9tyovdE1pFitFlW6oFwKI';
-//https://nlzzdpmnuhqshtmnhhde.supabase.co
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(
+  supabaseUrl,
+  supabaseAnonKey
+);

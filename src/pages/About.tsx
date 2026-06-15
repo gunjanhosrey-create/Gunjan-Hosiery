@@ -1,7 +1,7 @@
 import PageShell from '@/components/PageShell';
 
 const HERO =
-  'https://d64gsuwffb70l.cloudfront.net/6a266a1da78e16ead3558256_1780902780540_89a3a52a.jpg';
+  '/about/main.png';
 
 export default function About() {
   return (
@@ -44,7 +44,7 @@ export default function About() {
           </div>
 
           <img
-            src="/public/gunjan-hosiery.png"
+            src="/about/gunjan-hosiery.png"
             alt="Gunjan Hosiery"
             className="rounded-3xl shadow-lg"
           />
@@ -69,7 +69,7 @@ export default function About() {
           </div>
 
           <img
-            src="/founder.jpg"
+            src="/about/founder.jpg"
             alt="Founder"
             className="rounded-3xl shadow-lg"
           />
@@ -80,7 +80,7 @@ export default function About() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
           <img
-            src="/gunjan.png"
+            src="/about/gunjan.jpeg"
             alt="CEO"
             className="rounded-3xl shadow-lg order-2 md:order-1"
           />
@@ -122,7 +122,7 @@ export default function About() {
             </p>
           </div>
           <img
-            src="/bd-singh-yadav.jpeg"
+            src="/about/bd-singh-yadav.jpeg"
             alt="Managing Director"
             className="rounded-3xl shadow-lg"
           />
