@@ -29,28 +29,57 @@ export default function CheckoutPage() {
   const [payError, setPayError] = useState('');
   const [tax] = useState(0);
   const [loading, setLoading] = useState(false);
+const [addr, setAddr] = useState({
+  name: '',
+  email: '',
+  address: '',
+  city: '',
+  state: '',
+  zip: '',
+  country: 'India',
+});
+  const validateForm = () => {
+  setPayError('');
 
-  const [addr, setAddr] = useState({
-    name: '',
-    email: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: 'India',
-  });
+  if (
+    !addr.name.trim() ||
+    !addr.email.trim() ||
+    !addr.address.trim() ||
+    !addr.city.trim() ||
+    !addr.state.trim() ||
+    !addr.zip.trim() ||
+    !addr.country.trim()
+  ) {
+    setPayError('Please fill all required fields');
+    return false;
+  }
+
+  if (!/\S+@\S+\.\S+/.test(addr.email)) {
+    setPayError('Please enter a valid email address');
+    return false;
+  }
+
+  if (!/^\d{6}$/.test(addr.zip)) {
+    setPayError('Please enter a valid 6 digit PIN code');
+    return false;
+  }
+
+  return true;
+};
 
   const total = subtotal + tax;
 
-  const pay = async (e: React.FormEvent) => {
-    e.preventDefault();
+ const pay = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const loaded = await loadRazorpay();
+  if (!validateForm()) return;
 
-    if (!loaded) {
-      alert('Razorpay SDK failed to load');
-      return;
-    }
+  const loaded = await loadRazorpay();
+
+  if (!loaded) {
+    alert('Razorpay SDK failed to load');
+    return;
+  }
 
     const options = {
       key: 'rzp_test_T0egHAqjvkXFKW',
@@ -63,7 +92,6 @@ export default function CheckoutPage() {
         name: addr.name,
         email: addr.email,
       },
-
       handler: async function (response: any) {
         try {
           const { data: customer } = await supabase
@@ -78,13 +106,11 @@ export default function CheckoutPage() {
             .select('id')
             .single();
 
-          const { data: order } = await supabase
+          const { data: order, error: orderError } = await supabase
             .from('ecom_orders')
             .insert({
-              customer_id: customer?.id,
               status: 'paid',
-              subtotal,
-              tax,
+              payment_method: 'ONLINE',
               shipping: 0,
               total,
               shipping_address: addr,
@@ -93,11 +119,27 @@ export default function CheckoutPage() {
             .select('id')
             .single();
 
-          clearCart();
+          if (orderError) {
+            console.error('ORDER ERROR:', orderError);
+            throw orderError;
+          }
 
+          await supabase.from('ecom_order_items').insert(
+            cart.map(item => ({
+              order_id: order?.id,
+              product_id: item.product_id,
+              product_name: item.name,
+              product_image: item.image,
+              price: item.price,
+              quantity: item.quantity,
+              variant: item.variant_title || '',
+            }))
+          );
+
+          clearCart();
           nav(`/order-confirmation?id=${order?.id || ''}`);
         } catch (err) {
-          console.error(err);
+          console.error('ORDER ERROR:', err);
           setPayError('Order save failed');
         }
       },
@@ -111,6 +153,7 @@ export default function CheckoutPage() {
     razorpay.open();
   };
 const placeCODOrder = async () => {
+  if (!validateForm()) return;
   try {
     setLoading(true);
 
@@ -126,15 +169,11 @@ const placeCODOrder = async () => {
       .select('id')
       .single();
 
-    const { data: order } = await supabase
+    const { data: order, error: orderError } = await supabase
       .from('ecom_orders')
       .insert({
-        customer_id: customer?.id,
         status: 'pending',
         payment_method: 'COD',
-        payment_status: 'unpaid',
-        subtotal,
-        tax,
         shipping: 0,
         total,
         shipping_address: addr,
@@ -142,11 +181,27 @@ const placeCODOrder = async () => {
       .select('id')
       .single();
 
-    clearCart();
+    if (orderError) {
+      console.error(orderError);
+      throw orderError;
+    }
 
+    await supabase.from('ecom_order_items').insert(
+      cart.map(item => ({
+        order_id: order?.id,
+        product_id: item.product_id,
+        product_name: item.name,
+        product_image: item.image,
+        price: item.price,
+        quantity: item.quantity,
+        variant: item.variant_title || '',
+      }))
+    );
+
+    clearCart();
     nav(`/order-confirmation?id=${order?.id || ''}`);
   } catch (err) {
-    console.error(err);
+    console.error('COD ORDER ERROR:', err);
     setPayError('COD order failed');
   } finally {
     setLoading(false);
@@ -169,41 +224,98 @@ const placeCODOrder = async () => {
           <div>
             <h2 className="font-semibold text-lg mb-4">Shipping Details</h2>
             <div className="grid grid-cols-2 gap-3">
-              <input placeholder="Full Name" className="col-span-2 border rounded-xl p-3 text-sm" value={addr.name} onChange={e => setAddr({ ...addr, name: e.target.value })} />
-              <input placeholder="Email" className="col-span-2 border rounded-xl p-3 text-sm" value={addr.email} onChange={e => setAddr({ ...addr, email: e.target.value })} />
-              <input placeholder="Address" className="col-span-2 border rounded-xl p-3 text-sm" value={addr.address} onChange={e => setAddr({ ...addr, address: e.target.value })} />
-              <input placeholder="City" className="border rounded-xl p-3 text-sm" value={addr.city} onChange={e => setAddr({ ...addr, city: e.target.value })} />
-              <input placeholder="State" className="border rounded-xl p-3 text-sm" value={addr.state} onChange={e => setAddr({ ...addr, state: e.target.value })} />
-              <input placeholder="ZIP / PIN" className="border rounded-xl p-3 text-sm" value={addr.zip} onChange={e => setAddr({ ...addr, zip: e.target.value })} />
-              <input placeholder="Country" className="border rounded-xl p-3 text-sm" value={addr.country} onChange={e => setAddr({ ...addr, country: e.target.value })} />
+              <input
+  name="name"
+  required
+  placeholder="Full Name"
+  className="col-span-2 border rounded-xl p-3 text-sm"
+  value={addr.name}
+  onChange={(e) => setAddr({ ...addr, name: e.target.value })}
+/>
+
+<input
+  name="email"
+  required
+  type="email"
+  placeholder="Email"
+  className="col-span-2 border rounded-xl p-3 text-sm"
+  value={addr.email}
+  onChange={(e) => setAddr({ ...addr, email: e.target.value })}
+/>
+
+<input
+  name="address"
+  required
+  placeholder="Address"
+  className="col-span-2 border rounded-xl p-3 text-sm"
+  value={addr.address}
+  onChange={(e) => setAddr({ ...addr, address: e.target.value })}
+/>
+
+<input
+  name="city"
+  required
+  placeholder="City"
+  className="border rounded-xl p-3 text-sm"
+  value={addr.city}
+  onChange={(e) => setAddr({ ...addr, city: e.target.value })}
+/>
+
+<input
+  name="state"
+  required
+  placeholder="State"
+  className="border rounded-xl p-3 text-sm"
+  value={addr.state}
+  onChange={(e) => setAddr({ ...addr, state: e.target.value })}
+/>
+
+<input
+  name="zip"
+  required
+  placeholder="ZIP / PIN"
+  className="border rounded-xl p-3 text-sm"
+  value={addr.zip}
+  onChange={(e) => setAddr({ ...addr, zip: e.target.value })}
+/>
+
+<input
+  name="country"
+  required
+  placeholder="Country"
+  className="border rounded-xl p-3 text-sm"
+  value={addr.country}
+  onChange={(e) => setAddr({ ...addr, country: e.target.value })}
+/>
             </div>
+            
+            <h2 className="font-semibold text-lg mt-8 mb-4">
+              Payment
+            </h2>
 
-            <h2 className="font-semibold text-lg mt-8 mb-4">Payment</h2>
-            {payError && <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-700 text-sm mb-3">{payError}</div>}
+            {payError && (
+              <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-700 text-sm mb-3">
+                {payError}
+              </div>
+            )}
+
             <form onSubmit={pay}>
-  <button
-    type="submit"
-    disabled={loading}
-    className="w-full mt-5 bg-[#0A0A0A] text-white py-4 rounded-xl font-medium hover:bg-[#8B2635] transition disabled:opacity-50"
-  >
-    {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
-  </button>
-  <button
-  type="button"
-  onClick={placeCODOrder}
-  className="w-full mt-3 border border-[#8B2635] text-[#8B2635] py-4 rounded-xl font-medium hover:bg-[#8B2635] hover:text-white transition"
->
-  Cash on Delivery
-</button>
-<h2 className="font-semibold text-lg mt-8 mb-4">Payment</h2>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-5 bg-[#0A0A0A] text-white py-4 rounded-xl font-medium hover:bg-[#8B2635] transition disabled:opacity-50"
+              >
+                {loading ? 'Processing...' : `Pay ${formatPrice(total)}`}
+              </button>
 
-{payError && (
-  <div className="bg-red-50 border border-red-200 p-4 rounded-xl text-red-700 text-sm mb-3">
-    {payError}
-  </div>
-)}
-
-</form>
+              <button
+                type="button"
+                onClick={placeCODOrder}
+                className="w-full mt-3 border border-[#8B2635] text-[#8B2635] py-4 rounded-xl font-medium hover:bg-[#8B2635] hover:text-white transition"
+              >
+                Cash on Delivery
+              </button>
+            </form>
           </div>
 
           <div className="bg-[#FAF8F5] rounded-2xl p-6 h-fit">
