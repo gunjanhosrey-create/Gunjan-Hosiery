@@ -67,105 +67,6 @@ export default function AdminOrders() {
         <h2 className="font-poppins font-bold text-2xl mb-6">
           Orders ({orders.length})
         </h2>
-
-        <div className="bg-white rounded-2xl border overflow-x-auto">
-          <table className="w-full text-sm min-w-[1200px]">
-            <thead className="bg-[#FAF8F5]">
-              <tr>
-                <th className="p-4 text-left">Order ID</th>
-                <th className="p-4 text-left">Customer</th>
-                <th className="p-4 text-left">Email</th>
-                <th className="p-4 text-left">Address</th>
-                <th className="p-4 text-left">Total</th>
-                <th className="p-4 text-left">Payment</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Date</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={8} className="p-10 text-center">
-                    Loading...
-                  </td>
-                </tr>
-              ) : orders.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="p-10 text-center">
-                    No orders found
-                  </td>
-                </tr>
-              ) : (
-                orders.map((o) => (
-                  <tr key={o.id} className="border-t">
-                    <td className="p-4">
-                      #{String(o.id).slice(0, 8)}
-                    </td>
-
-                    <td className="p-4">
-                      {o.shipping_address?.name || '-'}
-                    </td>
-
-                    <td className="p-4">
-                      {o.shipping_address?.email || '-'}
-                    </td>
-
-                    <td className="p-4">
-                      <div className="max-w-[250px] text-xs">
-                        {o.shipping_address?.address || '-'}
-                        <br />
-                        {o.shipping_address?.city || ''}
-                        {o.shipping_address?.state
-                          ? `, ${o.shipping_address.state}`
-                          : ''}
-                        <br />
-                        {o.shipping_address?.zip || ''}
-                      </div>
-                    </td>
-
-                    <td className="p-4">
-                      {formatPrice(o.total || 0)}
-                    </td>
-
-                    <td className="p-4">
-                      {o.payment_method || 'ONLINE'}
-                    </td>
-
-                    <td className="p-4">
-                      <select
-                        value={o.status || 'pending'}
-                        onChange={(e) =>
-                          update(o.id, e.target.value)
-                        }
-                        className="border rounded px-2 py-1"
-                      >
-                        {STATUSES.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-
-                    <td className="p-4">
-                      {o.created_at
-                        ? new Date(o.created_at).toLocaleString()
-                        : '-'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="font-poppins font-bold text-2xl mb-6">
-          Order Items ({orderItems.length})
-        </h2>
-
         <div className="bg-white rounded-2xl border overflow-x-auto">
           <table className="w-full text-sm min-w-[1800px]">
             <thead className="bg-[#FAF8F5]">
@@ -178,7 +79,6 @@ export default function AdminOrders() {
     <th className="p-4 text-left">Payment</th>
     <th className="p-4 text-left">Status</th>
     <th className="p-4 text-left">Date</th>
-
     <th className="p-4 text-left">Item ID</th>
     <th className="p-4 text-left">Image</th>
     <th className="p-4 text-left">Product Name</th>
