@@ -8,14 +8,14 @@ export default function About() {
     <PageShell>
       {/* Hero Section */}
       <div className="relative h-80 overflow-hidden">
-        <img src={HERO} className="w-full h-full object-cover" alt="About Gunjan Hosiery" />
+        <img src={HERO} className="w-full h-full object-cover" alt="About Gunjan Apparel" />
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
           <div className="text-center">
             <p className="text-white uppercase tracking-[0.3em] text-sm">
               Since 1990
             </p>
             <h1 className="font-poppins font-bold text-5xl text-white mt-3">
-              About Gunjan Hosiery
+              About Gunjan Apparel
             </h1>
           </div>
         </div>
@@ -32,8 +32,8 @@ export default function About() {
               Over 35 Years of Trust & Quality
             </h2>
             <p className="mt-6 text-gray-600 leading-relaxed">
-              Established in 1990, Gunjan Hosiery has been committed to
-              delivering premium-quality innerwear, thermal wear, and hosiery
+              Established in 1990, Gunjan Apparel has been committed to
+              delivering premium-quality innerwear, thermal wear, and apparel
               products for families across India.
             </p>
             <p className="mt-4 text-gray-600 leading-relaxed">
@@ -44,8 +44,8 @@ export default function About() {
           </div>
 
           <img
-            src="/about/gunjan-hosiery.png"
-            alt="Gunjan Hosiery"
+            src="/about/gunjan-apparel.png"
+            alt="Gunjan Apparel"
             className="rounded-3xl shadow-lg"
           />
         </div>
@@ -61,8 +61,8 @@ export default function About() {
             <p className="text-[#8B2635] font-semibold mt-2">Founder</p>
 
             <p className="mt-6 text-gray-600 leading-relaxed">
-              Gunjan Hosiery was founded in 1990 by Mr. Ram Pratap Singh Yadav
-              with a vision to provide high-quality hosiery products at
+              Gunjan Apparel was founded in 1990 by Mr. Ram Pratap Singh Yadav
+              with a vision to provide high-quality apparel products at
               affordable prices. His commitment to excellence and customer trust
               laid the foundation for the brand's continued success.
             </p>
@@ -94,7 +94,7 @@ export default function About() {
             </p>
 
             <p className="mt-6 text-gray-600 leading-relaxed">
-              Under the leadership of Mr. Gunjan Singh Yadav, Gunjan Hosiery is
+              Under the leadership of Mr. Gunjan Singh Yadav, Gunjan Apparel is
               embracing innovation, digital transformation, and customer-focused
               growth. His vision is to expand the brand while preserving its
               commitment to quality and trust.
@@ -117,7 +117,7 @@ export default function About() {
             <p className="mt-6 text-gray-600 leading-relaxed">
               As Managing Director, Brahmdatt Singh Yadav oversees operations,
               quality assurance, and business development. His dedication
-              ensures every Gunjan Hosiery product meets the highest standards
+              ensures every Gunjan Apparel product meets the highest standards
               of comfort, durability, and reliability.
             </p>
           </div>

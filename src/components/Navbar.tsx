@@ -44,9 +44,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <button className="md:hidden p-2" onClick={() => setOpen(true)}><Menu size={22} /></button>
           <Link to="/" className="flex items-center gap-2.5">
-            <img src="/gunjan-logo.png" alt="Gunjan Hosiery logo" className="h-9 w-9 rounded-full object-contain" />
+            <img src="/gunjan-logo.png" alt="Gunjan Apparel logo" className="h-9 w-9 rounded-full object-contain" />
             <span className="font-poppins font-bold text-xl md:text-2xl tracking-tight text-[#0A0A0A]">GUNJAN</span>
-            <span className="hidden sm:inline text-[10px] tracking-[0.3em] text-[#8B2635] font-semibold mt-1">GARMENTS</span>
+            <span className="hidden sm:inline text-[10px] tracking-[0.3em] text-[#8B2635] font-semibold mt-1">APPAREL</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-7">
@@ -86,7 +86,7 @@ export default function Navbar() {
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-white p-6 flex flex-col gap-1">
             <div className="flex justify-between items-center mb-4">
               <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
-                <img src="/gunjan-logo.png" alt="Gunjan Hosiery logo" className="h-9 w-9 rounded-full object-contain" />
+                <img src="/gunjan-logo.png" alt="Gunjan Apparel logo" className="h-9 w-9 rounded-full object-contain" />
                 <span className="font-poppins font-bold text-xl">GUNJAN</span>
               </Link>
               <button onClick={() => setOpen(false)}><X size={22} /></button>

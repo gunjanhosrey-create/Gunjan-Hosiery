@@ -44,7 +44,7 @@ export default function Distributor() {
     <PageShell>
       <div className="max-w-lg mx-auto px-4 py-16">
         <h1 className="font-poppins font-bold text-4xl text-[#0A0A0A] text-center">Become a Distributor</h1>
-        <p className="text-center text-[#2C2C2C]/60 mt-2">Partner with Gunjan Hosiery and grow your business with wholesale pricing.</p>
+        <p className="text-center text-[#2C2C2C]/60 mt-2">Partner with Gunjan Apparel and grow your business with wholesale pricing.</p>
         <form onSubmit={submit} className="mt-8 space-y-4 bg-white border border-gray-100 shadow-sm rounded-3xl p-7">
           <input required placeholder="Business Name" className="w-full border rounded-xl p-3 text-sm" value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} />
           <input required placeholder="Contact Person" className="w-full border rounded-xl p-3 text-sm" value={form.contact_name} onChange={e => setForm({ ...form, contact_name: e.target.value })} />

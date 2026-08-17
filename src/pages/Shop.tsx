@@ -43,8 +43,8 @@ export default function Shop() {
   const [sort, setSort] = useState('featured');
 
   useSeo({
-    title: q ? `Search ${q} - Gunjan Hosiery` : 'Shop Boys, Girls, Kids and Thermal Wear - Gunjan Hosiery',
-    description: 'Browse Gunjan Hosiery boys innerwear, girls innerwear, kids essentials and thermal wear with size, color, price and thermal type filters.',
+    title: q ? `Search ${q} - Gunjan Apparel` : 'Shop Boys, Girls, Kids and Thermal Wear - Gunjan Apparel',
+    description: 'Browse Gunjan Apparel boys innerwear, girls innerwear, kids essentials and thermal wear with size, color, price and thermal type filters.',
     keywords: ['Boys Innerwear', 'Girls Innerwear', 'Kids Innerwear', 'Thermal Wear', 'Winter Collection'],
   });
 

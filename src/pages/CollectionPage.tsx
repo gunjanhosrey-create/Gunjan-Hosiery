@@ -28,8 +28,8 @@ export default function CollectionPage() {
   const title = labels[handle || ''] || collection?.title || 'Collection';
 
   useSeo({
-    title: `${title} - Gunjan Hosiery`,
-    description: `Shop ${title.toLowerCase()} from Gunjan Hosiery with premium cotton comfort and modern everyday fits.`,
+    title: `${title} - Gunjan Apparel`,
+    description: `Shop ${title.toLowerCase()} from Gunjan Apparel with premium cotton comfort and modern everyday fits.`,
     keywords: ['Boys Innerwear', 'Girls Innerwear', 'Kids Innerwear', 'Thermal Wear', 'Winter Collection', title],
   });
 

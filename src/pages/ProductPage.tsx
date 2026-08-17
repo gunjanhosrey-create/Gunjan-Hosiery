@@ -44,7 +44,6 @@ export default function ProductPage() {
       else setRatingInfo({ avg: 0, count: 0 });
     };
     run();
-    window.scrollTo(0, 0);
   }, [handle]);
   if (!product) return <PageShell><div className="py-32 text-center text-[#2C2C2C]/60">Loading...</div></PageShell>;
 

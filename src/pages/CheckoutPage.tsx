@@ -85,7 +85,7 @@ const [addr, setAddr] = useState({
       key: 'rzp_test_T0egHAqjvkXFKW',
       amount: total,
       currency: 'INR',
-      name: 'Gunjan Hosiery',
+      name: 'Gunjan Apparel',
       description: 'Order Payment',
 
       prefill: {

@@ -38,7 +38,7 @@ export default function Admin() {
         <form onSubmit={login} className="bg-white rounded-2xl p-8 w-full max-w-sm">
           <div className="w-14 h-14 rounded-2xl bg-[#8B2635] text-white flex items-center justify-center mx-auto mb-5"><Lock size={24} /></div>
           <h1 className="font-poppins font-bold text-2xl text-center">Admin Access</h1>
-          <p className="text-center text-[#2C2C2C]/50 text-sm mt-1">Gunjan Hosiery Control Panel</p>
+          <p className="text-center text-[#2C2C2C]/50 text-sm mt-1">Gunjan Apparel Control Panel</p>
           <input type="password" placeholder="Password" className="w-full border rounded-xl p-3 text-sm mt-6" value={pw} onChange={e => { setPw(e.target.value); setErr(''); }} />
           {err && <p className="text-red-600 text-sm mt-2">{err}</p>}
           <button className="w-full bg-[#0A0A0A] text-white py-3 rounded-xl font-medium mt-4 hover:bg-[#8B2635]">Enter</button>

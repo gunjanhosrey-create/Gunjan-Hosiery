@@ -52,7 +52,7 @@ export default function Contact() {
 
   const openWhatsApp = () => {
     const msg = encodeURIComponent(
-      'Hi! I would like to know more about Gunjan Hosiery products.'
+      'Hi! I would like to know more about Gunjan Apparel products.'
     );
 
     window.open(

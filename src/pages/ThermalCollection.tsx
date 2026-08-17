@@ -50,8 +50,8 @@ export default function ThermalCollection() {
   const banners = useStorageImages('banners', [images[0] || fallbackThermal]);
 
   useSeo({
-    title: 'Premium Thermal Collection - Gunjan Hosiery',
-    description: 'Stay warm with men thermal wear, women thermal wear, boys thermal wear, girls thermal wear and kids thermal wear from Gunjan Hosiery.',
+    title: 'Premium Thermal Collection - Gunjan Apparel',
+    description: 'Stay warm with men thermal wear, women thermal wear, boys thermal wear, girls thermal wear and kids thermal wear from Gunjan Apparel.',
     keywords: ['Thermal Wear', 'Winter Collection', 'Boys Innerwear', 'Girls Innerwear', 'Kids Innerwear'],
   });
 
