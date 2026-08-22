@@ -77,7 +77,7 @@ export default function Hero() {
           </h1>
 
           <p className="text-white/80 text-base lg:text-lg mt-5 max-w-md leading-relaxed">
-            Premium apparel for boys, girls, kids and thermal wear.
+            Premium essentials for boys, girls, kids and thermal wear.
             Soft comfort, clean fits, honest prices.
           </p>
 

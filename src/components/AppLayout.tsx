@@ -27,8 +27,8 @@ export default function AppLayout() {
   const [thermal, setThermal] = useState<any[]>([]);
 
   useSeo({
-    title: 'Gunjan Apparel - Boys, Girls, Kids Innerwear and Thermal Wear',
-    description: 'Shop boys innerwear, girls innerwear, kids innerwear and premium thermal wear from Gunjan Apparel.',
+    title: 'Gunjan - Boys, Girls, Kids Innerwear and Thermal Wear',
+    description: 'Shop boys innerwear, girls innerwear, kids innerwear and premium thermal wear from Gunjan.',
     keywords: ['Boys Innerwear', 'Girls Innerwear', 'Kids Innerwear', 'Thermal Wear', 'Winter Collection'],
   });
 
@@ -72,13 +72,13 @@ export default function AppLayout() {
 
       <section className="max-w-7xl mx-auto px-4 lg:px-8 py-16">
         <div className="text-center mb-8">
-          <p className="text-xs uppercase tracking-[0.2em] text-[#8B2635] font-semibold">@gunjanapparel</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-[#8B2635] font-semibold">@gunjan</p>
           <h2 className="font-poppins font-bold text-3xl lg:text-4xl text-[#0A0A0A] mt-1">Follow Our Journey</h2>
         </div>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
           {INSTA.map((src, i) => (
             <a key={i} href="#" className="group relative overflow-hidden rounded-2xl aspect-square">
-              <img src={src} alt="Gunjan Apparel lifestyle" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              <img src={src} alt="Gunjan lifestyle" loading="lazy" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               <div className="absolute inset-0 bg-[#8B2635]/0 group-hover:bg-[#8B2635]/30 transition" />
             </a>
           ))}

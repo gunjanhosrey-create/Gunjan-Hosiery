@@ -28,8 +28,8 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2">
             <Link to="/" className="inline-flex items-center gap-3">
-              <img src="/gunjan-logo.png" alt="Gunjan Apparel logo" className="h-10 w-10 rounded-full bg-white object-contain" />
-              <h3 className="font-poppins font-bold text-2xl">GUNJAN <span className="text-[#D4622F]">APPAREL</span></h3>
+              <img src="/gunjan-logo.png" alt="Gunjan logo" className="h-10 w-10 rounded-full bg-white object-contain" />
+              <h3 className="font-poppins font-bold text-2xl">GUNJAN</h3>
             </Link>
             <p className="text-white/60 text-sm mt-3 max-w-sm leading-relaxed">
               Premium yet affordable everyday essentials for boys, girls, kids and winter thermal wear. Crafted with combed cotton, built to last.
@@ -73,7 +73,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-12 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-          <p className="text-white/40 text-xs">Copyright {new Date().getFullYear()} Gunjan Apparel. All rights reserved.</p>
+          <p className="text-white/40 text-xs">Copyright {new Date().getFullYear()} Gunjan. All rights reserved.</p>
           <button onClick={() => nav('/admin')} className="text-white/20 hover:text-white/50 transition flex items-center gap-1 text-xs">
             <Lock size={11} /> Admin
           </button>

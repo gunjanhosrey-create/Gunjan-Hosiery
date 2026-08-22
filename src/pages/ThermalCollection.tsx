@@ -49,9 +49,56 @@ export default function ThermalCollection() {
   const images = useStorageImages('thermal', [fallbackThermal]);
   const banners = useStorageImages('banners', [images[0] || fallbackThermal]);
 
+  // Choose distinct, category-specific images.
+  const usedImages = new Set<string>();
+  const categoryPublicFallback: Record<string, string> = {
+    men: '/thermal/men.jpeg',
+    women: '/thermal/women.png',
+    boys: '/thermal/boys.png',
+    girls: '/thermal/girls.png',
+    kids: '/thermal/kids.png',
+  };
+
+  function getImageForCategory(gender: string) {
+    const keywords: Record<string, string[]> = {
+      men: ['men', 'man', 'male'],
+      women: ['women', 'woman', 'female'],
+      boys: ['boys', 'boy'],
+      girls: ['girls', 'girl'],
+      kids: ['kids', 'kid', 'children', 'child'],
+    };
+
+    const keys = keywords[gender] || [gender];
+
+    // Prefer images from Supabase storage that match keywords
+    for (const k of keys) {
+      const found = images.find(img => img.toLowerCase().includes(`/${k}`) || img.toLowerCase().includes(k));
+      if (found && !usedImages.has(found)) {
+        usedImages.add(found);
+        return found;
+      }
+    }
+
+    // If none found in storage, use public fallback mapping
+    const fallback = categoryPublicFallback[gender] || images[0] || fallbackThermal;
+    if (!usedImages.has(fallback)) {
+      usedImages.add(fallback);
+      return fallback;
+    }
+
+    // As a last resort, pick the first unused image from storage or the generic fallback
+    const firstUnused = images.find(i => !usedImages.has(i));
+    if (firstUnused) {
+      usedImages.add(firstUnused);
+      return firstUnused;
+    }
+
+    return fallbackThermal;
+  }
+
   useSeo({
-    title: 'Premium Thermal Collection - Gunjan Apparel',
-    description: 'Stay warm with men thermal wear, women thermal wear, boys thermal wear, girls thermal wear and kids thermal wear from Gunjan Apparel.',
+    title: 'Premium Thermal Collection - Gunjan',
+    description: 'Stay warm with men thermal wear, women thermal wear, boys thermal wear, girls thermal wear and kids thermal wear from Gunjan.',
     keywords: ['Thermal Wear', 'Winter Collection', 'Boys Innerwear', 'Girls Innerwear', 'Kids Innerwear'],
   });
 
@@ -115,21 +162,24 @@ export default function ThermalCollection() {
           </div>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {thermalCategories.map((card, index) => (
-            <article key={card.title} className="group overflow-hidden rounded-2xl border bg-white shadow-sm">
-              <div className="aspect-[4/5] overflow-hidden bg-[#F5F1ED]">
-                <img src='/thermal/kids.png'></img>
-              </div>
-              <div className="p-4">
-                <h3 className="font-poppins font-semibold text-lg">{card.title}</h3>
-                <p className="text-sm text-[#2C2C2C]/60 mt-1 min-h-[42px]">{card.line}</p>
-                <button onClick={() => setFilters(f => ({ ...f, gender: card.gender }))}
-                  className="mt-4 w-full rounded-full bg-[#0A0A0A] text-white py-2.5 text-sm font-medium hover:bg-[#8B2635] transition">
-                  Shop Now
-                </button>
-              </div>
-            </article>
-          ))}
+          {thermalCategories.map((card) => {
+            const imgSrc = getImageForCategory(card.gender);
+            return (
+              <article key={card.title} className="group overflow-hidden rounded-2xl border bg-white shadow-sm">
+                <div className="aspect-[4/5] overflow-hidden bg-[#F5F1ED]">
+                  <img src={imgSrc} alt={card.title} className="h-full w-full object-cover" />
+                </div>
+                <div className="p-4">
+                  <h3 className="font-poppins font-semibold text-lg">{card.title}</h3>
+                  <p className="text-sm text-[#2C2C2C]/60 mt-1 min-h-[42px]">{card.line}</p>
+                  <button onClick={() => setFilters(f => ({ ...f, gender: card.gender }))}
+                    className="mt-4 w-full rounded-full bg-[#0A0A0A] text-white py-2.5 text-sm font-medium hover:bg-[#8B2635] transition">
+                    Shop Now
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 

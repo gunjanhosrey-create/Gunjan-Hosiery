@@ -8,14 +8,14 @@ export default function About() {
     <PageShell>
       {/* Hero Section */}
       <div className="relative h-80 overflow-hidden">
-        <img src={HERO} className="w-full h-full object-cover" alt="About Gunjan Apparel" />
+        <img src={HERO} className="w-full h-full object-cover" alt="About Gunjan" />
         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
           <div className="text-center">
             <p className="text-white uppercase tracking-[0.3em] text-sm">
               Since 1990
             </p>
             <h1 className="font-poppins font-bold text-5xl text-white mt-3">
-              About Gunjan Apparel
+              About Gunjan
             </h1>
           </div>
         </div>
@@ -32,9 +32,9 @@ export default function About() {
               Over 35 Years of Trust & Quality
             </h2>
             <p className="mt-6 text-gray-600 leading-relaxed">
-              Established in 1990, Gunjan Apparel has been committed to
-              delivering premium-quality innerwear, thermal wear, and apparel
-              products for families across India.
+              Established in 1990, Gunjan has been committed to delivering
+              premium-quality innerwear, thermal wear, and everyday essentials
+              for families across India.
             </p>
             <p className="mt-4 text-gray-600 leading-relaxed">
               With decades of manufacturing experience, we focus on comfort,
@@ -44,8 +44,8 @@ export default function About() {
           </div>
 
           <img
-            src="/about/gunjan-apparel.png"
-            alt="Gunjan Apparel"
+            src="/about/gunjan.png"
+            alt="Gunjan"
             className="rounded-3xl shadow-lg"
           />
         </div>
@@ -61,15 +61,15 @@ export default function About() {
             <p className="text-[#8B2635] font-semibold mt-2">Founder</p>
 
             <p className="mt-6 text-gray-600 leading-relaxed">
-              Gunjan Apparel was founded in 1990 by Mr. Ram Pratap Singh Yadav
-              with a vision to provide high-quality apparel products at
-              affordable prices. His commitment to excellence and customer trust
-              laid the foundation for the brand's continued success.
+              Gunjan was founded in 1990 by Mr. Ram Pratap Singh Yadav with a
+              vision to provide high-quality essentials at affordable prices.
+              His commitment to excellence and customer trust laid the
+              foundation for the brand's continued success.
             </p>
           </div>
 
           <img
-            src="/about/founder.jpg"
+            src="/about/founder.jpeg"
             alt="Founder"
             className="rounded-3xl shadow-lg"
           />
@@ -94,7 +94,7 @@ export default function About() {
             </p>
 
             <p className="mt-6 text-gray-600 leading-relaxed">
-              Under the leadership of Mr. Gunjan Singh Yadav, Gunjan Apparel is
+              Under the leadership of Mr. Gunjan Singh Yadav, Gunjan is
               embracing innovation, digital transformation, and customer-focused
               growth. His vision is to expand the brand while preserving its
               commitment to quality and trust.
@@ -117,8 +117,8 @@ export default function About() {
             <p className="mt-6 text-gray-600 leading-relaxed">
               As Managing Director, Brahmdatt Singh Yadav oversees operations,
               quality assurance, and business development. His dedication
-              ensures every Gunjan Apparel product meets the highest standards
-              of comfort, durability, and reliability.
+              ensures every Gunjan product meets the highest standards of
+              comfort, durability, and reliability.
             </p>
           </div>
           <img
@@ -135,7 +135,7 @@ export default function About() {
           {[
             ['35+', 'Years Experience'],
             ['5000+', 'Happy Customers'],
-            ['100+', 'Retail Partners'],
+            ['100+', 'Wholesale Partners'],
             ['100%', 'Quality Commitment'],
           ].map(([value, label]) => (
             <div
