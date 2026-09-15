@@ -33,7 +33,12 @@ export default function CartPage() {
                 <div className="flex-1">
                   <h3 className="font-medium text-[#0A0A0A]">{item.name}</h3>
                   {item.variant_title && <p className="text-sm text-[#2C2C2C]/60">Size: {item.variant_title}</p>}
-                  <p className="font-semibold mt-1">{formatPrice(item.price)}</p>
+                  <p className="text-sm text-[#2C2C2C]/70 mt-1">Price: {formatPrice(item.price_per_piece ?? item.price)} / Piece</p>
+                  <p className="text-sm text-[#2C2C2C]/70">Pieces / Box: {item.pieces_per_box || 1}</p>
+                  <p className="text-sm text-[#2C2C2C]/70">{item.quantity} {item.quantity === 1 ? 'Box' : 'Boxes'} × {formatPrice(item.price)}</p>
+                  <p className="text-sm text-[#2C2C2C]/70">{item.quantity * (item.pieces_per_box || 1)} Pieces</p>
+                  <p className="text-sm text-[#2C2C2C]/70">Box Price: {formatPrice(item.price)}</p>
+                  <p className="font-semibold mt-1">Total: {formatPrice(item.price * item.quantity)}</p>
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center border border-gray-200 bg-white rounded-lg">
                       <button onClick={() => updateQty(item.product_id, item.variant_id, item.quantity - 1)} className="p-2"><Minus size={14} /></button>

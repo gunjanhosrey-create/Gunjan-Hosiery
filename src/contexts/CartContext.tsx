@@ -8,6 +8,8 @@ export interface CartItem {
   variant_title?: string;
   sku?: string;
   price: number;
+  price_per_piece?: number;
+  pieces_per_box?: number;
   image?: string;
 }
 
