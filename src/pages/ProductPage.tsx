@@ -43,34 +43,26 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const [added, setAdded] = useState(false);
+  const [selectionError, setSelectionError] = useState('');
   const [ratingInfo, setRatingInfo] = useState({ avg: 0, count: 0 });
 
   useEffect(() => {
     const run = async () => {
       setSelectedVariant(null); setSelectedSize(''); setActiveImg(0); setQty(1);
-      const { data } = await supabase.from('ecom_products').select('*, variants:ecom_product_variants(*)').eq('handle', handle).single();
+      const { data, error } = await supabase.from('ecom_products').select('*, variants:ecom_product_variants(*)').eq('handle', handle).single();
+      if (error) {
+        console.error('PRODUCT LOAD ERROR:', error);
+        return;
+      }
       if (!data) return;
-      let variants = data.variants || [];
-      if (data.has_variants && !variants.length) {
+      let variants = Array.isArray(data.variants) ? data.variants : [];
+      if (!variants.length) {
         const { data: v } = await supabase.from('ecom_product_variants').select('*').eq('product_id', data.id).order('position');
         variants = v || []; data.variants = variants;
       }
       setProduct(data);
-      const savedSizePricing = normalizeSizePricing(data.size_pricing);
-      const savedSizes = [...new Set([...Object.keys(savedSizePricing), ...normalizeSizes(data.sizes), ...normalizeSizes(data.size)])];
-      console.log('PRODUCT DATA:', data);
-      console.log('SIZES:', savedSizes);
-      console.log('SIZE PRICING:', savedSizePricing);
-      if (savedSizes.length) {
-        const firstSize = savedSizes.find(size => savedSizePricing[size]?.quantity == null || savedSizePricing[size].quantity > 0) || savedSizes[0];
-        setSelectedVariant(null);
-        setSelectedSize(firstSize);
-        console.log('SELECTED SIZE:', firstSize);
-      } else if (variants.length) {
-        const sorted = [...variants].sort((a, b) => (a.position || 0) - (b.position || 0));
-        const first = sorted.find(v => v.inventory_qty == null || v.inventory_qty > 0) || sorted[0];
-        setSelectedVariant(first); setSelectedSize(first?.option1 || '');
-      }
+      setSelectedVariant(null);
+      setSelectedSize('');
       const { data: rel } = await supabase.from('ecom_products').select('*').eq('product_type', data.product_type).neq('id', data.id).eq('status', 'active').limit(4);
       setRelated(rel || []);
       const { data: revs } = await supabase.from('product_reviews').select('rating').eq('product_id', data.id).eq('status', 'approved');
@@ -83,15 +75,13 @@ export default function ProductPage() {
 
   const sizePricing = normalizeSizePricing(product.size_pricing);
   const sizePricingSizes = Object.keys(sizePricing);
-  const productSizes = [...new Set([...sizePricingSizes, ...normalizeSizes(product.sizes), ...normalizeSizes(product.size)])];
-  const variantSizes = (product.variants || []).map((variant: any) => String(variant.option1 ?? variant.size ?? '').trim()).filter(Boolean);
-  const sizes = [...new Set([...productSizes, ...variantSizes])];
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  const variantSizes = variants.map((variant: any) => String(variant.option1 ?? variant.size ?? '').trim()).filter(Boolean);
   const hasSizePricing = sizePricingSizes.length > 0;
-  const hasVariants = variantSizes.length > 0;
+  const productSizes = [...new Set([...normalizeSizes(product.sizes), ...normalizeSizes(product.size)])];
+  const sizes = hasSizePricing ? sizePricingSizes : [...new Set([...productSizes, ...variantSizes])];
   const hasSizes = sizes.length > 0;
-  console.log('SIZES:', sizes);
-  console.log('SIZE PRICING:', sizePricing);
-  console.log('SELECTED SIZE:', selectedSize);
+  const showSizeSection = hasSizes || product.has_variants;
 
   const getInStock = () => {
     if (hasSizePricing && selectedSize) {
@@ -99,45 +89,60 @@ export default function ProductPage() {
       return quantity == null || Number(quantity) > 0;
     }
     if (selectedVariant) return selectedVariant.inventory_qty == null || selectedVariant.inventory_qty > 0;
-    if (product.variants?.length) return product.variants.some((v: any) => v.inventory_qty == null || v.inventory_qty > 0);
+    if (variants.length) return variants.some((v: any) => v.inventory_qty == null || v.inventory_qty > 0);
     if (product.has_variants) return true;
     return product.inventory_qty == null || product.inventory_qty > 0;
   };
   const inStock = getInStock();
   const selectedSizeData = hasSizePricing ? sizePricing[selectedSize] : null;
-  const currentPrice = selectedSizeData?.price_per_piece != null
-    ? Math.round(Number(selectedSizeData.price_per_piece) * 100)
+  const selectedPiecePrice = selectedSizeData?.price_per_piece ?? selectedSizeData?.price;
+  const currentPrice = selectedPiecePrice != null
+    ? Math.round(Number(selectedPiecePrice) * 100)
     : selectedVariant?.price ?? product.price;
-  const piecesPerBoxValue = selectedSizeData?.quantity ?? selectedVariant?.inventory_qty ?? product.inventory_qty;
+  const sizePrice = currentPrice;
+  const piecesPerBoxValue = selectedSizeData?.pieces_per_box ?? selectedSizeData?.quantity ?? selectedVariant?.inventory_qty ?? product.inventory_qty;
   const piecesPerBox = Number.isFinite(Number(piecesPerBoxValue)) && Number(piecesPerBoxValue) > 0 ? Number(piecesPerBoxValue) : 1;
   const boxPrice = currentPrice * piecesPerBox;
   const totalPrice = boxPrice * qty;
   const rating = (4 + ((product.name?.length || 0) % 10) / 10).toFixed(1);
-  const selectedVariantForSize = product.variants?.find((variant: any) => variant.option1 === selectedSize);
+  const selectedVariantForSize = variants.find((variant: any) => variant.option1 === selectedSize);
 
   const selectSize = (s: string) => {
+    const sizeData = hasSizePricing ? sizePricing[s] : variants.find((x: any) => x.option1 === s || x.title?.toLowerCase().includes(s.toLowerCase()));
+    const sizeStock = hasSizePricing ? sizeData?.quantity : sizeData?.inventory_qty;
+    if (sizeStock != null && Number(sizeStock) <= 0) return;
     setSelectedSize(s);
-    console.log('SELECTED SIZE:', s);
+    setSelectionError('');
     if (hasSizePricing) {
       setSelectedVariant(null);
       return;
     }
-    const v = product.variants?.find((x: any) => x.option1 === s || x.title?.toLowerCase().includes(s.toLowerCase()));
+    const v = variants.find((x: any) => x.option1 === s || x.title?.toLowerCase().includes(s.toLowerCase()));
     if (v) {
       setSelectedVariant(v);
     }
   };
   const handleAdd = () => {
-    if ((hasSizes && !selectedSize) || !inStock) return false;
+    if (hasSizes && !selectedSize) {
+      setSelectionError('Please select a size');
+      return false;
+    }
+    if (!inStock) return false;
+    const selectedBoxPrice = boxPrice;
     addToCart({
       product_id: product.id,
       variant_id: selectedVariantForSize?.id || selectedVariant?.id || (hasSizePricing ? selectedSize : undefined),
       name: product.name,
+      selectedSize: selectedSize || undefined,
+      sizePrice,
+      selected_size: selectedSize || undefined,
       variant_title: selectedVariant?.title || selectedSize || undefined,
       sku: selectedVariant?.sku || product.sku || product.handle,
-      price: boxPrice,
+      price: selectedBoxPrice,
       price_per_piece: currentPrice,
       pieces_per_box: piecesPerBox,
+      box_price: selectedBoxPrice,
+      total_price: selectedBoxPrice * qty,
       image: product.images?.[0],
     }, qty);
     setAdded(true);
@@ -177,24 +182,33 @@ export default function ProductPage() {
             </div>
             <p className="font-poppins font-bold text-3xl text-[#0A0A0A] mt-5">{formatPrice(totalPrice)}</p>
             <p className="text-sm text-[#2C2C2C]/70 mt-1">{formatPrice(currentPrice)} / Piece</p>
-            {hasSizes && (
+            {showSizeSection && (
               <div className="mt-4">
-                <div className="flex flex-wrap gap-2.5">
-                  {sizes.map(s => {
-                    const v = product.variants?.find((x: any) => x.option1 === s);
-                    const sizeData = hasSizePricing ? sizePricing[s] : v;
-                    const sizeStock = hasSizePricing ? sizeData?.quantity : sizeData?.inventory_qty;
-                    const ok = sizeStock == null || Number(sizeStock) > 0;
-                    return (
-                      <button key={s} onClick={() => selectSize(s)}
-                        className={`min-w-[52px] px-4 py-3 rounded-xl border-2 font-medium text-sm transition ${
-                          selectedSize === s ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
-                          : ok ? 'border-gray-200 hover:border-[#8B2635]' : 'border-gray-100 text-gray-400 line-through hover:border-[#8B2635]'}`}>
-                        {s}
-                      </button>
-                    );
-                  })}
-                </div>
+                <p className="text-sm font-semibold text-[#0A0A0A] mb-2">Available Sizes</p>
+                {hasSizes ? (
+                  <div className="flex flex-wrap gap-2.5">
+                    {sizes.map(s => {
+                      const v = variants.find((x: any) => x.option1 === s);
+                      const sizeData = hasSizePricing ? sizePricing[s] : v;
+                      const sizeStock = hasSizePricing ? sizeData?.quantity : sizeData?.inventory_qty;
+                      const ok = sizeStock == null || Number(sizeStock) > 0;
+                      return (
+                        <button key={s} type="button" onClick={() => selectSize(s)} disabled={!ok} aria-pressed={selectedSize === s}
+                          className={`min-w-[52px] px-4 py-3 rounded-xl border-2 font-medium text-sm transition ${
+                            selectedSize === s ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
+                            : ok ? 'border-gray-200 hover:border-[#8B2635]' : 'border-gray-100 text-gray-400 line-through cursor-not-allowed'}`}>
+                          {s}{!ok && <span className="block text-[10px] font-normal no-underline">Out of stock</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#8B2635]">Size data is unavailable for this product.</p>
+                )}
+                {selectedSize && sizePrice != null && (
+                  <p className="mt-3 text-sm text-[#2C2C2C]/70">Selected Size: {selectedSize} · {formatPrice(sizePrice)} / Piece</p>
+                )}
+                {!selectedSize && <p className="mt-3 text-sm text-[#8B2635] font-medium">Please select a size</p>}
               </div>
             )}
             <div className="flex items-center gap-4 mt-7">
@@ -205,14 +219,15 @@ export default function ProductPage() {
                 <button onClick={() => setQty(qty + 1)} disabled={!inStock} className="p-3 disabled:opacity-40"><Plus size={16} /></button>
               </div>
               <span className="text-sm text-[#2C2C2C]/70">{qty === 1 ? 'Box' : 'Boxes'}</span>
-              <button onClick={handleAdd} disabled={(hasSizes && !selectedSize) || !inStock}
+              <button onClick={handleAdd} disabled={!inStock}
                 className="flex-1 bg-[#0A0A0A] text-white py-4 rounded-xl font-medium hover:bg-[#8B2635] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 {added ? (<><Check size={18} /> Added to Cart</>) : !inStock ? 'Out of Stock' : hasSizes && !selectedSize ? 'Select a Size' : 'Add to Cart'}
               </button>
             </div>
+            {selectionError && <p role="alert" className="text-sm text-[#8B2635] mt-2">{selectionError}</p>}
             <p className="text-sm text-[#2C2C2C]/70 mt-2">{piecesPerBox} Pieces / Box</p>
             <p className="text-[#2C2C2C]/70 mt-4 leading-relaxed">{product.description}</p>
-            <button onClick={() => { if (handleAdd()) nav('/cart'); }} disabled={(hasSizes && !selectedSize) || !inStock}
+            <button onClick={() => { if (handleAdd()) nav('/cart'); }} disabled={!inStock}
               className="w-full mt-3 border-2 border-[#0A0A0A] py-3.5 rounded-xl font-medium hover:bg-[#0A0A0A] hover:text-white transition disabled:opacity-50">
               Buy Now
             </button>

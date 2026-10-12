@@ -326,7 +326,7 @@ const placeCODOrder = async () => {
                   <img src={i.image} className="w-14 h-14 rounded-lg object-cover" alt={i.name} />
                   <div className="flex-1 text-sm">
                     <p className="font-medium line-clamp-1">{i.name}</p>
-                    <p className="text-[#2C2C2C]/50 text-xs">{i.variant_title} × {i.quantity}</p>
+                    <p className="text-[#2C2C2C]/50 text-xs">{i.selected_size || i.variant_title} × {i.quantity}</p>
                   </div>
                   <span className="text-sm font-medium">{formatPrice(i.price * i.quantity)}</span>
                 </div>

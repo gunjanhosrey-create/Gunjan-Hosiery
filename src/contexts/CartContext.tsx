@@ -5,11 +5,16 @@ export interface CartItem {
   variant_id?: string;
   quantity: number;
   name: string;
+  selectedSize?: string;
+  sizePrice?: number;
+  selected_size?: string;
   variant_title?: string;
   sku?: string;
   price: number;
   price_per_piece?: number;
   pieces_per_box?: number;
+  box_price?: number;
+  total_price?: number;
   image?: string;
 }
 
@@ -46,9 +51,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let next: CartItem[];
       if (idx >= 0) {
         next = [...prev];
-        next[idx] = { ...next[idx], quantity: next[idx].quantity + qty };
+        const quantity = next[idx].quantity + qty;
+        const boxPrice = next[idx].box_price ?? next[idx].price;
+        next[idx] = { ...next[idx], quantity, total_price: boxPrice * quantity };
       } else {
-        next = [...prev, { ...item, quantity: qty }];
+        const boxPrice = item.box_price ?? item.price;
+        next = [...prev, { ...item, box_price: boxPrice, total_price: boxPrice * qty, quantity: qty }];
       }
       localStorage.setItem(KEY, JSON.stringify(next));
       return next;
@@ -61,7 +69,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateQty: CartCtx['updateQty'] = (pid, vid, qty) => {
     if (qty <= 0) return removeFromCart(pid, vid);
-    persist(cart.map(i => (i.product_id === pid && i.variant_id === vid ? { ...i, quantity: qty } : i)));
+    persist(cart.map(i => {
+      if (i.product_id !== pid || i.variant_id !== vid) return i;
+      const boxPrice = i.box_price ?? i.price;
+      return { ...i, quantity: qty, total_price: boxPrice * qty };
+    }));
   };
 
   const clearCart = () => persist([]);

@@ -32,7 +32,7 @@ export default function AdminPeople({ tab }: { tab: 'queries' | 'distributors' }
                 <div>
                   <p className="font-medium">{r.business_name}</p>
                   <p className="text-sm text-[#2C2C2C]/60">{r.contact_name} · {r.email} · {r.phone}</p>
-                  <p className="text-xs mt-1">GST: <span className="font-mono">{r.gst_number}</span> {r.gst_valid && <span className="text-green-600">✓ verified</span>}</p>
+                  <p className="text-xs mt-1">GST: <span className="font-mono">{r.gst_number}</span> {r.gst_valid ? <span className="text-green-600">✓ verified</span> : <span className="text-amber-600">verification pending</span>}</p>
                 </div>
                 <select value={r.status} onChange={e => setStatus(r.id, e.target.value)} className="border rounded-lg px-2 py-1 text-xs"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
               </div>

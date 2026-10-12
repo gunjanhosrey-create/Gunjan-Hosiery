@@ -12,6 +12,22 @@ export default function Auth() {
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const googleSignIn = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setError(error);
+        setLoading(false);
+      }
+    } catch (caughtError) {
+      console.error('Google sign-in failed:', caughtError);
+      setError(caughtError instanceof Error ? caughtError.message : 'Google sign-in failed. Please try again.');
+      setLoading(false);
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(''); setInfo(''); setLoading(true);
@@ -32,7 +48,7 @@ export default function Auth() {
           <h1 className="font-poppins font-bold text-3xl text-[#0A0A0A] text-center">{mode === 'login' ? 'Welcome Back' : 'Create Account'}</h1>
           <p className="text-center text-[#2C2C2C]/60 text-sm mt-2">{mode === 'login' ? 'Sign in to your account' : 'Join the Gunjan family'}</p>
 
-          <button onClick={signInWithGoogle} className="w-full mt-6 border border-gray-200 rounded-xl py-3 flex items-center justify-center gap-2 font-medium hover:bg-[#FAF8F5] transition text-sm">
+          <button type="button" onClick={googleSignIn} disabled={loading} className="w-full mt-6 border border-gray-200 rounded-xl py-3 flex items-center justify-center gap-2 font-medium hover:bg-[#FAF8F5] transition text-sm disabled:opacity-50">
             <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="" /> Continue with Google
           </button>
           <div className="flex items-center gap-3 my-5"><div className="flex-1 h-px bg-gray-200" /><span className="text-xs text-[#2C2C2C]/40">OR</span><div className="flex-1 h-px bg-gray-200" /></div>

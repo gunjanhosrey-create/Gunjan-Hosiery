@@ -2,9 +2,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { formatPrice } from '@/lib/format';
 import { IMAGE_BUCKET, IMAGE_FOLDERS, ImageFolder } from '@/lib/storageImages';
-import { Plus, Trash2, Upload, X, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Upload, X, Loader2, Pencil } from 'lucide-react';
 
 const clean = (value: string) => value.trim().toLowerCase().replace(/\s+/g, '-');
+const parseProductValue = (value: any): any => {
+  if (typeof value !== 'string') return value;
+  try { return JSON.parse(value); } catch { return value; }
+};
 
 type SizePriceRow = { size: string; price: string; quantity: string };
 
@@ -31,6 +35,7 @@ export default function AdminProducts() {
   const [show, setShow] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<any>(initialForm);
 
   const updateSizeRow = (index: number, field: keyof SizePriceRow, value: string) => {
@@ -49,6 +54,48 @@ export default function AdminProducts() {
 
   const load = () => supabase.from('ecom_products').select('*').order('created_at', { ascending: false }).then(({ data }) => setProducts(data || []));
   useEffect(() => { load(); }, []);
+
+  const openNew = () => {
+    setEditingId(null);
+    setForm({ ...initialForm, sizeRows: [{ size: '', price: '', quantity: '' }] });
+    setShow(true);
+  };
+
+  const openEdit = async (product: any) => {
+    const { data: variants } = await supabase.from('ecom_product_variants').select('*').eq('product_id', product.id).order('position');
+    const parsedPricing = parseProductValue(product.size_pricing);
+    const pricing = parsedPricing && typeof parsedPricing === 'object' && !Array.isArray(parsedPricing) ? parsedPricing : {};
+    const pricingRows = Array.isArray(parsedPricing)
+      ? parsedPricing.map((value: any) => ({
+        size: String(value?.size ?? value?.option1 ?? ''),
+        price: String(Number(value?.price_per_piece ?? value?.price ?? 0)),
+        quantity: String(value?.pieces_per_box ?? value?.quantity ?? 0),
+      }))
+      : Object.entries(pricing).map(([size, value]: [string, any]) => ({
+        size,
+        price: String(Number(value?.price_per_piece ?? value?.price ?? 0)),
+        quantity: String(value?.pieces_per_box ?? value?.quantity ?? 0),
+      }));
+    const variantRows = (variants || []).map((variant: any) => ({
+      size: String(variant.option1 || variant.title || ''),
+      price: String((Number(variant.price || 0) / 100).toFixed(2)),
+      quantity: String(variant.inventory_qty ?? 0),
+    })).filter((row: SizePriceRow) => row.size);
+    const sizeRows = pricingRows.length ? pricingRows : variantRows;
+    setEditingId(product.id);
+    setForm({
+      ...initialForm,
+      name: product.name || '',
+      description: product.description || '',
+      price: String(Number(product.price || 0) / 100),
+      product_type: product.product_type || '',
+      inventory_qty: String(product.inventory_qty ?? ''),
+      sizePricing: sizeRows.length > 0,
+      sizeRows: sizeRows.length ? sizeRows : [{ size: '', price: '', quantity: '' }],
+      images: product.images || [],
+    });
+    setShow(true);
+  };
 
   const upload = async (files: FileList | null) => {
   if (!files) return;
@@ -94,17 +141,18 @@ export default function AdminProducts() {
     const hasValidSizeRows = sizeRows.length > 0 && sizeRows.every((row: SizePriceRow) => {
       const rowPrice = parseFloat(row.price);
       const rowQuantity = parseInt(row.quantity, 10);
-      return Number.isFinite(rowPrice) && rowPrice > 0 && Number.isInteger(rowQuantity) && rowQuantity >= 0;
+      return Number.isFinite(rowPrice) && rowPrice > 0 && Number.isInteger(rowQuantity) && rowQuantity > 0;
     });
     const firstSizeRow = hasValidSizeRows ? sizeRows[0] : null;
     const pricePerPiece = parseFloat(form.price) || (firstSizeRow ? parseFloat(firstSizeRow.price) : NaN);
     const inventoryQty = form.inventory_qty === '' && firstSizeRow ? parseInt(firstSizeRow.quantity, 10) : parseInt(form.inventory_qty, 10);
     const sizePricing = hasValidSizeRows
-      ? Object.fromEntries(sizeRows.map((row: SizePriceRow) => [row.size.trim(), {
+      ? sizeRows.map((row: SizePriceRow) => ({
+        size: row.size.trim(),
         price_per_piece: parseFloat(row.price),
-        quantity: parseInt(row.quantity, 10),
-      }]))
-      : null;
+        pieces_per_box: parseInt(row.quantity, 10),
+      }))
+      : [];
     if (!form.name || !Number.isFinite(pricePerPiece) || pricePerPiece <= 0 || !Number.isInteger(inventoryQty) || inventoryQty < 0 || (form.sizePricing && !hasValidSizeRows)) return;
     setSaving(true);
     const handle = form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString().slice(-4);
@@ -119,9 +167,9 @@ export default function AdminProducts() {
       form.folder === 'thermal' && 'thermal',
     ].filter(Boolean);
 
-    const { data: product, error } = await supabase.from('ecom_products').insert({
+    const productData = {
       name: form.name,
-      handle,
+      ...(editingId ? {} : { handle }),
       description: form.description,
       price: Math.round(pricePerPiece * 100),
       product_type: form.product_type || (form.folder === 'thermal' ? 'Thermal Wear' : 'Innerwear'),
@@ -131,24 +179,59 @@ export default function AdminProducts() {
       size_pricing: sizePricing,
       images: form.images,
       tags,
-    }).select('id').single();
+    };
+    if (!editingId) console.log('INSERT PAYLOAD:', productData);
+    const { data: product, error } = editingId
+      ? await supabase.from('ecom_products').update(productData).eq('id', editingId).select('id').single()
+      : await supabase.from('ecom_products').insert(productData).select('id').single();
+    if (!editingId) {
+      console.log('INSERT DATA:', product);
+      console.log('INSERT ERROR:', error);
+    }
     if (error || !product) {
+      if (error) {
+        console.error('Supabase insert failed:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+      }
       setSaving(false);
       return;
     }
+    if (editingId) await supabase.from('ecom_product_variants').delete().eq('product_id', editingId);
     if (hasValidSizeRows) {
-      await supabase.from('ecom_product_variants').insert(sizeRows.map((row: SizePriceRow, position: number) => ({
+      const variants = sizeRows.map((row: SizePriceRow, position: number) => ({
         product_id: product.id,
         title: row.size.trim(),
         option1: row.size.trim(),
         price: Math.round(parseFloat(row.price) * 100),
         inventory_qty: parseInt(row.quantity, 10),
         position,
-      })));
+      }));
+      const { data: insertedVariants, error: variantError } = await supabase
+        .from('ecom_product_variants')
+        .insert(variants)
+        .select();
+
+      if (variantError) {
+        console.error('Variant insert failed:', {
+          code: variantError.code,
+          message: variantError.message,
+          details: variantError.details,
+          hint: variantError.hint,
+        });
+        setSaving(false);
+        return;
+      }
+
+      console.log('Variants inserted:', insertedVariants);
     }
     setSaving(false);
     setShow(false);
-    setForm(initialForm);
+    setEditingId(null);
+    setForm({ ...initialForm, sizeRows: [{ size: '', price: '', quantity: '' }] });
     load();
   };
 
@@ -167,7 +250,7 @@ export default function AdminProducts() {
           <h2 className="font-poppins font-bold text-2xl">Products ({products.length})</h2>
           <p className="text-sm text-[#2C2C2C]/60 mt-1">{thermalCount} thermal products. Upload folders: boys, girls, kids, thermal, banners.</p>
         </div>
-        <button onClick={() => setShow(true)} className="flex items-center gap-2 bg-[#0A0A0A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#8B2635]"><Plus size={16} /> Add Product</button>
+        <button onClick={openNew} className="flex items-center gap-2 bg-[#0A0A0A] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#8B2635]"><Plus size={16} /> Add Product</button>
       </div>
 
       <div className="bg-white rounded-2xl border overflow-x-auto">
@@ -183,7 +266,7 @@ export default function AdminProducts() {
                 <td className="p-4 text-[#2C2C2C]/60 max-w-xs truncate">{(p.tags || []).join(', ')}</td>
                 <td className="p-4">{formatPrice(p.price)}</td>
                 <td className="p-4">{p.inventory_qty}</td>
-                <td className="p-4"><button onClick={() => del(p.id)} className="text-[#8B2635]"><Trash2 size={16} /></button></td>
+                <td className="p-4 flex gap-3"><button onClick={() => openEdit(p)} aria-label={`Edit ${p.name}`} className="text-[#2C2C2C]"><Pencil size={16} /></button><button onClick={() => del(p.id)} aria-label={`Delete ${p.name}`} className="text-[#8B2635]"><Trash2 size={16} /></button></td>
               </tr>
             ))}
           </tbody>
@@ -194,7 +277,7 @@ export default function AdminProducts() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShow(false)} />
           <div className="relative bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-5"><h3 className="font-poppins font-bold text-xl">New Product</h3><button onClick={() => setShow(false)}><X size={20} /></button></div>
+            <div className="flex justify-between items-center mb-5"><h3 className="font-poppins font-bold text-xl">{editingId ? 'Edit Product' : 'New Product'}</h3><button onClick={() => setShow(false)}><X size={20} /></button></div>
             <div className="space-y-3">
               <div className="grid sm:grid-cols-2 gap-3">
                 <input placeholder="Name" className="w-full border rounded-xl p-3 text-sm" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
@@ -271,7 +354,7 @@ export default function AdminProducts() {
               {form.images.length > 0 && (
                 <div className="flex gap-2 flex-wrap">{form.images.map((u: string, i: number) => <img key={i} src={u} className="w-16 h-16 rounded-lg object-cover" alt="" />)}</div>
               )}
-              <button onClick={save} disabled={saving} className="w-full bg-[#0A0A0A] text-white py-3 rounded-xl font-medium hover:bg-[#8B2635] disabled:opacity-50">{saving ? 'Saving...' : 'Save Product'}</button>
+              <button onClick={save} disabled={saving} className="w-full bg-[#0A0A0A] text-white py-3 rounded-xl font-medium hover:bg-[#8B2635] disabled:opacity-50">{saving ? 'Saving...' : editingId ? 'Update Product' : 'Save Product'}</button>
             </div>
           </div>
         </div>

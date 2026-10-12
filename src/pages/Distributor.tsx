@@ -23,7 +23,7 @@ export default function Distributor() {
     e.preventDefault();
     setError('');
     if (gstState !== 'valid') { setError('Please enter a valid 15-digit GST number to continue.'); return; }
-    const { error } = await supabase.from('distributors').insert({ ...form, gst_valid: true, status: 'pending' });
+    const { error } = await supabase.from('distributors').insert({ ...form, gst_valid: false, status: 'pending' });
     if (error) { setError(error.message); return; }
     setSubmitted(true);
   };
@@ -34,7 +34,7 @@ export default function Distributor() {
         <div className="max-w-md mx-auto px-4 py-24 text-center">
           <CheckCircle2 size={64} className="mx-auto text-[#8B2635]" />
           <h1 className="font-poppins font-bold text-3xl mt-5">Application Submitted!</h1>
-          <p className="text-[#2C2C2C]/60 mt-3">Your GST was verified successfully. Our team will review your distributor application and reach out within 48 hours.</p>
+          <p className="text-[#2C2C2C]/60 mt-3">Your GST number passed a format check only; it has not been verified against official records. Our team will review your application and contact you within 48 hours.</p>
         </div>
       </PageShell>
     );
@@ -59,7 +59,7 @@ export default function Distributor() {
                 {gstState === 'invalid' && <XCircle size={18} className="text-red-500" />}
               </span>
             </div>
-            {gstState === 'valid' && <p className="text-green-600 text-xs mt-1.5">GST verified successfully ✓</p>}
+            {gstState === 'valid' && <p className="text-green-600 text-xs mt-1.5">GST number format is valid. Official verification is still pending.</p>}
             {gstState === 'invalid' && <p className="text-red-600 text-xs mt-1.5">Invalid GST format. Example: 22AAAAA0000A1Z5</p>}
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
